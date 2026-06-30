@@ -1,0 +1,34 @@
+openapi: 3.0.3
+info:
+  title: sms-service API
+  version: 1.0.0
+  description: Auto-generated OpenAPI Specification
+paths:
+  /public/all/send-sms:
+    post:
+      tags:
+      - SmsApi
+      operationId: SmsApi_sendSms
+      parameters:
+      - name: allParams
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/Map'
+      responses:
+        '200':
+          description: Thành công
+          content:
+            MediaType.APPLICATION_JSON_VALUE:
+              schema:
+                type: string
+components:
+  schemas:
+    Map:
+      type: object
+      properties: {}
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
