@@ -8,3 +8,5 @@ spec:
   type: service
   owner: demo-team
   lifecycle: production
+  providesApis:
+    - demo-api
