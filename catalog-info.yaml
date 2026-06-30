@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+
+metadata:
+  name: demo-service
+
+spec:
+  type: service
+  owner: demo-team
+  lifecycle: production
