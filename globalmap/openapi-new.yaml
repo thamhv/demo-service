@@ -1,36 +1,106 @@
+openapi: 3.0.3
+
+info:
+  title: SMS Service API
+  version: 1.0.0
+  description: |
+    SMS Service cung cấp các API cho phép gửi mới và gửi lại (resend)
+    tin nhắn SMS.
+
+    ## Features
+
+    - Gửi SMS
+    - Gửi lại SMS
+    - JWT Authentication
+    - JSON REST API
+
+servers:
+  - url: https://api.example.com
+    description: Production
+
+  - url: https://dev-api.example.com
+    description: Development
+
+tags:
+  - name: SMS
+    description: SMS operations
+
 paths:
+
   /public/all/send-sms:
     post:
       tags:
         - SMS
-      summary: Gửi SMS
-      description: Gửi một tin nhắn SMS mới.
+
+      summary: Send SMS
+      description: |
+        Gửi một tin nhắn SMS mới đến số điện thoại nhận.
+
       operationId: sendSms
+
       security:
         - bearerAuth: []
+
       requestBody:
         required: true
+        description: Thông tin tin nhắn cần gửi.
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/SendSmsRequest'
+            examples:
+              otp:
+                summary: OTP Message
+                value:
+                  phoneNumber: "0912345678"
+                  message: "Your OTP is 123456"
+                  senderId: "MYAPP"
+
       responses:
         "200":
-          description: Gửi SMS thành công
+          description: SMS được gửi thành công.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SendSmsResponse'
+
+              examples:
+                success:
+                  value:
+                    success: true
+                    messageId: "SMS-202607010001"
+                    status: SENT
+                    message: SMS sent successfully
+
+        "400":
+          description: Dữ liệu request không hợp lệ.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        "401":
+          description: Authentication failed.
+
+        "403":
+          description: Permission denied.
+
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /public/all/resend-sms:
     post:
       tags:
         - SMS
 
-      summary: Gửi lại SMS
+      summary: Resend SMS
       description: |
-        Gửi lại một tin nhắn SMS đã được tạo trước đó.
-        API sử dụng `messageId` của lần gửi trước để thực hiện gửi lại.
+        Gửi lại một tin nhắn SMS đã được gửi trước đó dựa trên
+        messageId.
 
       operationId: resendSms
 
@@ -39,7 +109,7 @@ paths:
 
       requestBody:
         required: true
-        description: Thông tin yêu cầu gửi lại SMS
+        description: Thông tin yêu cầu gửi lại SMS.
         content:
           application/json:
             schema:
@@ -47,39 +117,90 @@ paths:
             examples:
               resend:
                 value:
-                  messageId: "SMS-202606300001"
+                  messageId: "SMS-202607010001"
 
       responses:
         "200":
-          description: Gửi lại SMS thành công
+          description: SMS được gửi lại thành công.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SendSmsResponse'
 
+              examples:
+                success:
+                  value:
+                    success: true
+                    messageId: "SMS-202607010002"
+                    status: SENT
+                    message: SMS resent successfully
+
         "400":
-          description: Dữ liệu không hợp lệ
+          description: Dữ liệu request không hợp lệ.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+        "401":
+          description: Authentication failed.
+
+        "403":
+          description: Permission denied.
+
         "404":
-          description: Không tìm thấy tin nhắn cần gửi lại
+          description: Không tìm thấy messageId.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
         "500":
-          description: Lỗi hệ thống
+          description: Internal server error.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
 components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
+
+    SendSmsRequest:
+      type: object
+      required:
+        - phoneNumber
+        - message
+
+      properties:
+
+        phoneNumber:
+          type: string
+          description: Số điện thoại người nhận.
+          example: "0912345678"
+
+        message:
+          type: string
+          description: Nội dung tin nhắn SMS.
+          maxLength: 160
+          example: "Your OTP is 123456"
+
+        senderId:
+          type: string
+          description: Tên hiển thị người gửi (nếu được hỗ trợ).
+          example: "MYAPP"
+
+        scheduleTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: Thời điểm gửi hẹn giờ.
 
     ResendSmsRequest:
       type: object
@@ -87,30 +208,76 @@ components:
         - messageId
 
       properties:
+
         messageId:
           type: string
-          description: Mã giao dịch của tin nhắn đã gửi trước đó.
-          example: "SMS-202606300001"
+          description: |
+            Mã giao dịch của SMS đã gửi trước đó.
+            Nếu messageId không tồn tại, hệ thống trả về HTTP 404.
+          example: "SMS-202607010001"
 
     SendSmsResponse:
       type: object
+
       properties:
+
         success:
           type: boolean
+          description: Kết quả xử lý.
           example: true
 
         messageId:
           type: string
-          description: Mã giao dịch của lần gửi lại.
+          description: |
+            Mã giao dịch của lần gửi hiện tại.
+            Với resend, đây có thể là messageId mới.
           example: "SMS-202607010001"
 
         status:
           type: string
+          description: Trạng thái gửi SMS.
           enum:
-            - SENT
             - QUEUED
+            - SENT
             - FAILED
 
         message:
           type: string
-          example: SMS resent successfully
+          description: Thông báo kết quả.
+          example: SMS sent successfully
+
+    ErrorResponse:
+      type: object
+
+      properties:
+
+        timestamp:
+          type: string
+          format: date-time
+          description: Thời điểm phát sinh lỗi.
+          example: "2026-07-01T10:15:30Z"
+
+        status:
+          type: integer
+          description: HTTP status code.
+          example: 400
+
+        error:
+          type: string
+          description: Tên lỗi HTTP.
+          example: Bad Request
+
+        code:
+          type: string
+          description: Mã lỗi nghiệp vụ.
+          example: SMS-001
+
+        message:
+          type: string
+          description: Mô tả lỗi.
+          example: Invalid phone number.
+
+        path:
+          type: string
+          description: Endpoint được gọi.
+          example: /public/all/send-sms

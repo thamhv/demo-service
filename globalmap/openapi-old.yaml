@@ -1,0 +1,180 @@
+openapi: 3.0.3
+
+info:
+  title: SMS Service API
+  version: 1.0.0
+  description: |
+    API gửi tin nhắn SMS.
+
+    API cho phép gửi một tin nhắn SMS đến một hoặc nhiều số điện thoại.
+    Kết quả trả về bao gồm mã giao dịch và trạng thái xử lý.
+
+servers:
+  - url: https://api.example.com
+    description: Production
+  - url: https://dev-api.example.com
+    description: Development
+
+tags:
+  - name: SMS
+    description: SMS operations
+
+paths:
+  /public/all/send-sms:
+    post:
+      tags:
+        - SMS
+
+      summary: Gửi SMS
+      description: |
+        Gửi tin nhắn SMS đến một hoặc nhiều số điện thoại.
+
+      operationId: sendSms
+
+      security:
+        - bearerAuth: []
+
+      requestBody:
+        required: true
+        description: Thông tin gửi SMS
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendSmsRequest'
+            examples:
+              single:
+                summary: Gửi một số điện thoại
+                value:
+                  phoneNumber: "0912345678"
+                  message: "Xin chao tu SMS Service"
+                  senderId: "MYAPP"
+
+      responses:
+        "200":
+          description: Gửi SMS thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendSmsResponse'
+              examples:
+                success:
+                  value:
+                    success: true
+                    messageId: "SMS-202606300001"
+                    status: "SENT"
+                    message: "SMS sent successfully"
+
+        "400":
+          description: Dữ liệu không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        "401":
+          description: Chưa xác thực
+
+        "403":
+          description: Không có quyền truy cập
+
+        "500":
+          description: Lỗi hệ thống
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+
+    SendSmsRequest:
+      type: object
+      required:
+        - phoneNumber
+        - message
+
+      properties:
+
+        phoneNumber:
+          type: string
+          description: Số điện thoại nhận SMS
+          example: "0912345678"
+
+        message:
+          type: string
+          description: Nội dung tin nhắn
+          maxLength: 160
+          example: "Xin chao"
+
+        senderId:
+          type: string
+          description: Tên người gửi (nếu được hỗ trợ)
+          example: "MYAPP"
+
+        scheduleTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: Thời gian gửi hẹn giờ
+
+    SendSmsResponse:
+      type: object
+
+      properties:
+
+        success:
+          type: boolean
+          example: true
+
+        messageId:
+          type: string
+          description: Mã giao dịch SMS
+          example: "SMS-202606300001"
+
+        status:
+          type: string
+          description: Trạng thái gửi
+          enum:
+            - SENT
+            - QUEUED
+            - FAILED
+
+        message:
+          type: string
+          example: SMS sent successfully
+
+    ErrorResponse:
+      type: object
+
+      properties:
+
+        timestamp:
+          type: string
+          format: date-time
+
+        status:
+          type: integer
+          example: 400
+
+        error:
+          type: string
+          example: Bad Request
+
+        code:
+          type: string
+          example: SMS-001
+
+        message:
+          type: string
+          example: Invalid phone number
+
+        path:
+          type: string
+          example: /public/all/send-sms
