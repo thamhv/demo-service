@@ -1,0 +1,116 @@
+paths:
+  /public/all/send-sms:
+    post:
+      tags:
+        - SMS
+      summary: Gửi SMS
+      description: Gửi một tin nhắn SMS mới.
+      operationId: sendSms
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendSmsRequest'
+      responses:
+        "200":
+          description: Gửi SMS thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendSmsResponse'
+
+  /public/all/resend-sms:
+    post:
+      tags:
+        - SMS
+
+      summary: Gửi lại SMS
+      description: |
+        Gửi lại một tin nhắn SMS đã được tạo trước đó.
+        API sử dụng `messageId` của lần gửi trước để thực hiện gửi lại.
+
+      operationId: resendSms
+
+      security:
+        - bearerAuth: []
+
+      requestBody:
+        required: true
+        description: Thông tin yêu cầu gửi lại SMS
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResendSmsRequest'
+            examples:
+              resend:
+                value:
+                  messageId: "SMS-202606300001"
+
+      responses:
+        "200":
+          description: Gửi lại SMS thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendSmsResponse'
+
+        "400":
+          description: Dữ liệu không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        "404":
+          description: Không tìm thấy tin nhắn cần gửi lại
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        "500":
+          description: Lỗi hệ thống
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+
+    ResendSmsRequest:
+      type: object
+      required:
+        - messageId
+
+      properties:
+        messageId:
+          type: string
+          description: Mã giao dịch của tin nhắn đã gửi trước đó.
+          example: "SMS-202606300001"
+
+    SendSmsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+
+        messageId:
+          type: string
+          description: Mã giao dịch của lần gửi lại.
+          example: "SMS-202607010001"
+
+        status:
+          type: string
+          enum:
+            - SENT
+            - QUEUED
+            - FAILED
+
+        message:
+          type: string
+          example: SMS resent successfully

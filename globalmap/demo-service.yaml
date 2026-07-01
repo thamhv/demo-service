@@ -3,7 +3,7 @@ kind: Component
 
 metadata:
   name: demo-service
-
+  backstage.io/techdocs-ref: dir:.
 spec:
   type: service
   owner: rde-dev-team
