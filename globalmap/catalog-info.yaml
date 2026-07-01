@@ -1,0 +1,9 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: demo-service-all
+  description: A collection of all entities, except users, groups, and templates
+spec:
+  targets:
+    - ./demo-service.yaml
+    - ./demo-api.yaml

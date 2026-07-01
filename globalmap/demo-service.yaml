@@ -6,7 +6,8 @@ metadata:
 
 spec:
   type: service
-  owner: demo-team
+  owner: rde-dev-team
+  system: demo-system
   lifecycle: production
   providesApis:
     - demo-api
