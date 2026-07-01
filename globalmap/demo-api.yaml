@@ -7,4 +7,4 @@ spec:
   lifecycle: production
   owner: rde-dev-team
   definition:
-    $text: ./openapi-new.yaml
+    $text: ./openapi.yaml
