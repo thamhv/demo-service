@@ -13,3 +13,7 @@ spec:
   lifecycle: production
   providesApis:
     - demo-api
+  consumesApis:
+    - content-api
+  dependsOn:
+    - component:content-service

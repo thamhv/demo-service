@@ -1,8 +1,8 @@
-# SMS Service
+# Demo Service
 
 ## Overview
 
-SMS Service cung cấp các API cho phép hệ thống khác gửi và gửi lại tin nhắn SMS thông qua một giao diện REST thống nhất.
+Demo Service cung cấp các API cho phép hệ thống khác gửi và gửi lại tin nhắn SMS thông qua một giao diện REST thống nhất.
 
 Service được thiết kế để:
 
